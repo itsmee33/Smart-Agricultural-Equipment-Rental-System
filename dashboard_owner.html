@@ -1,0 +1,297 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="page-banner">
+  <div class="page-banner-deco"></div>
+  <div class="page-banner-deco2"></div>
+  <div class="container">
+    <p class="page-badge"><span data-mr="मालक डॅशबोर्ड">Owner Dashboard</span></p>
+    <h1 class="page-title"><span data-mr="नमस्कार,">Good day,</span> {{ session.username }} 🚜</h1>
+    <p class="page-subtitle"><span data-mr="तुमची यंत्रे व्यवस्थापित करा आणि भाडे विनंत्यांना उत्तर द्या">Manage your fleet and respond to rental requests</span></p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:2.5rem; padding-bottom:4rem;">
+
+  <!-- Earnings Cards -->
+  <div class="row g-3 mb-4 animate-enter">
+    <div class="col-6 col-md-3">
+      <div class="card-premium" style="padding:1.3rem 1.5rem;">
+        <div style="color:var(--ink-muted); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+          <i class="fas fa-indian-rupee-sign"></i> <span data-mr="एकूण कमाई">Total Earned</span>
+        </div>
+        <div style="font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:var(--forest);">
+          ₹{{ "%.0f"|format(total_earned) }}
+        </div>
+        <div style="font-size:0.78rem; color:var(--forest-light); margin-top:0.25rem;"><span data-mr="सर्व पुष्टी केलेले भाडे">All confirmed rentals</span></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-premium" style="padding:1.3rem 1.5rem;">
+        <div style="color:var(--ink-muted); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+          <i class="fas fa-calendar"></i> <span data-mr="या महिन्यात">This Month</span>
+        </div>
+        <div style="font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:var(--forest);">
+          ₹{{ "%.0f"|format(monthly_earned) }}
+        </div>
+        <div style="font-size:0.78rem; color:var(--forest-light); margin-top:0.25rem;"><span data-mr="चालू महिना">Current month</span></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-premium" style="padding:1.3rem 1.5rem;">
+        <div style="color:var(--ink-muted); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+          <i class="fas fa-hourglass-half"></i> <span data-mr="प्रलंबित उत्पन्न">Pending Income</span>
+        </div>
+        <div style="font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:#92400E;">
+          ₹{{ "%.0f"|format(pending_income) }}
+        </div>
+        <div style="font-size:0.78rem; color:#A16207; margin-top:0.25rem;"><span data-mr="मंजुरीची प्रतीक्षा">Awaiting approval</span></div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-premium" style="padding:1.3rem 1.5rem;">
+        <div style="color:var(--ink-muted); font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.4rem;">
+          <i class="fas fa-tractor"></i> <span data-mr="यंत्रे नोंदवली">Machines Listed</span>
+        </div>
+        <div style="font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; color:var(--forest);">
+          {{ equipment|length }}
+        </div>
+        <div style="font-size:0.78rem; color:var(--forest-light); margin-top:0.25rem;"><span data-mr="तुमच्या यादीत">In your inventory</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Trend (if data exists) -->
+  {% if monthly_data %}
+  <div class="card-premium mb-4 animate-enter" style="padding:1.5rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.2rem;">
+      <div class="card-header-title" style="font-size:1rem;">
+        <div class="card-header-icon"><i class="fas fa-chart-bar"></i></div>
+        <span data-mr="उत्पन्न — मागील ६ महिने">Revenue — Last 6 Months</span>
+      </div>
+    </div>
+    <canvas id="revenueChart" height="80"></canvas>
+  </div>
+  {% endif %}
+
+  <!-- Tabs -->
+  <div class="tab-bar animate-enter">
+    <button class="tab-item active" id="btn-inv" onclick="switchTab('tab-inv','btn-inv')">
+      <i class="fas fa-tractor"></i> <span data-mr="माझी यादी">My Inventory</span>
+    </button>
+    <button class="tab-item" id="btn-req" onclick="switchTab('tab-req','btn-req')">
+      <i class="fas fa-envelope-open-text"></i> <span data-mr="भाडे विनंत्या">Rental Requests</span>
+      {% set pending = namespace(n=0) %}{% for r in requests %}{% if r[6]=='Pending' %}{% set pending.n = pending.n+1 %}{% endif %}{% endfor %}
+      {% if pending.n > 0 %}
+        <span style="background:#EF4444;color:white;border-radius:50px;font-size:0.72rem;font-weight:700;padding:0.1rem 0.55rem;margin-left:0.2rem;">{{ pending.n }}</span>
+      {% endif %}
+    </button>
+  </div>
+
+  <!-- INVENTORY TAB -->
+  <div id="tab-inv">
+    <div class="card-premium">
+      <div class="card-header-premium">
+        <div class="card-header-title">
+          <div class="card-header-icon"><i class="fas fa-list"></i></div>
+          <span data-mr="नोंदवलेली उपकरणे">Listed Equipment</span>
+        </div>
+        <a href="/add_equipment" class="btn-gold">
+          <i class="fas fa-plus"></i> <span data-mr="यंत्र जोडा">Add Machine</span>
+        </a>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="table-premium">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th><span data-mr="यंत्राचे नाव">Machine Name</span></th>
+              <th><span data-mr="प्रकार">Category</span></th>
+              <th><span data-mr="दर / तास">Rate / Hour</span></th>
+              <th><span data-mr="कृती">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in equipment %}
+            <tr>
+              <td style="color:var(--ink-muted); font-weight:500; font-size:0.85rem;">#{{ item[0] }}</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                  <div class="table-equip-icon"><i class="fas fa-tractor"></i></div>
+                  <div>
+                    <div style="font-weight:600; color:var(--forest);">{{ item[2] }}</div>
+                    {% if item[4] %}<div style="font-size:0.78rem; color:var(--ink-muted); max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ item[4] }}</div>{% endif %}
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span style="background:rgba(27,67,50,0.08); color:var(--forest); border-radius:50px; font-size:0.8rem; font-weight:600; padding:0.25rem 0.8rem;">{{ item[3] }}</span>
+              </td>
+              <td style="font-weight:700; color:var(--forest); font-family:'Playfair Display',serif;">₹{{ item[5] }}</td>
+              <td>
+                <div style="display:flex; gap:0.5rem;">
+                  <a href="/edit_equipment/{{ item[0] }}" class="btn-outline-forest" style="font-size:0.82rem; padding:0.4rem 0.9rem;">
+                    <i class="fas fa-pen"></i> <span data-mr="संपादन">Edit</span>
+                  </a>
+                  <form action="/delete_equipment/{{ item[0] }}" method="POST"
+                        onsubmit="return confirm(localStorage.getItem('farmrental_lang')==='mr' ? '{{ item[2] }} तुमच्या यादीतून काढायचे का? प्रलंबित बुकिंग रद्द होतील.' : 'Remove {{ item[2] }} from your listings? Pending bookings will be cancelled.')">
+                    <button type="submit" class="btn-danger-soft" style="font-size:0.82rem; padding:0.4rem 0.9rem;">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-icon">🚜</div>
+                  <h3 class="empty-title"><span data-mr="अजून कोणतेही उपकरण नोंदवले नाही">No equipment listed yet</span></h3>
+                  <p class="empty-sub"><span data-mr="तुमचे पहिले उपकरण नोंदवण्यासाठी 'यंत्र जोडा' वर क्लिक करा.">Click "Add Machine" to list your first piece of equipment.</span></p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REQUESTS TAB -->
+  <div id="tab-req" style="display:none;">
+    <div class="card-premium">
+      <div class="card-header-premium">
+        <div class="card-header-title">
+          <div class="card-header-icon"><i class="fas fa-bell"></i></div>
+          <span data-mr="येणाऱ्या विनंत्या">Incoming Requests</span>
+        </div>
+        <span style="font-size:0.82rem; color:var(--ink-muted);">{{ requests|length }} <span data-mr="एकूण">total</span></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="table-premium">
+          <thead>
+            <tr>
+              <th><span data-mr="उपकरण">Equipment</span></th>
+              <th><span data-mr="शेतकरी">Farmer</span></th>
+              <th><span data-mr="संपर्क">Contact</span></th>
+              <th><span data-mr="तारखा">Dates</span></th>
+              <th><span data-mr="उत्पन्न">Income</span></th>
+              <th><span data-mr="कृती">Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in requests %}
+            <tr>
+              <td style="font-weight:600; color:var(--forest);">{{ req[1] }}</td>
+              <td>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <div style="width:30px;height:30px;background:rgba(27,67,50,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.8rem;color:var(--forest); flex-shrink:0;">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  <span style="font-size:0.92rem; font-weight:500;">{{ req[2] }}</span>
+                </div>
+              </td>
+              <td style="font-size:0.85rem; color:var(--ink-muted);">{{ req[7] }}</td>
+              <td>
+                <div style="font-size:0.85rem; color:var(--ink-soft);">
+                  <div>{{ req[3] }}</div>
+                  <div style="color:var(--ink-muted);">→ {{ req[4] }}</div>
+                </div>
+              </td>
+              <td style="font-weight:700; color:var(--forest); font-family:'Playfair Display',serif;">₹{{ "%.0f"|format(req[5]) }}</td>
+              <td>
+                {% if req[6] == 'Pending' %}
+                  <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <a href="/accept/{{ req[0] }}" class="btn-outline-forest" style="font-size:0.82rem; padding:0.4rem 0.9rem;">
+                      <i class="fas fa-check"></i> <span data-mr="स्वीकारा">Accept</span>
+                    </a>
+                    <a href="/reject/{{ req[0] }}" class="btn-danger-soft" style="font-size:0.82rem; padding:0.4rem 0.9rem;">
+                      <i class="fas fa-times"></i> <span data-mr="नाकारा">Reject</span>
+                    </a>
+                  </div>
+                {% elif req[6] == 'Confirmed' %}
+                  <span class="status-badge status-confirmed"><i class="fas fa-check-double"></i> <span data-mr="मंजूर">Approved</span></span>
+                {% else %}
+                  <span class="status-badge status-rejected"><i class="fas fa-ban"></i> <span data-mr="नाकारले">Rejected</span></span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <div class="empty-icon">📬</div>
+                  <h3 class="empty-title"><span data-mr="अजून कोणत्याही विनंत्या नाहीत">No requests yet</span></h3>
+                  <p class="empty-sub"><span data-mr="जेव्हा शेतकरी तुमची उपकरणे भाड्याने घेतील तेव्हा बुकिंग विनंत्या येथे दिसतील.">Booking requests will appear here when farmers rent your equipment.</span></p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+function switchTab(tabId, btnId) {
+  ['tab-inv','tab-req'].forEach(id => document.getElementById(id).style.display='none');
+  document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).style.display='block';
+  document.getElementById(btnId).classList.add('active');
+}
+
+{% if monthly_data %}
+const chartData = {
+  labels: [{% for row in monthly_data %}"{{ row[0] }}"{% if not loop.last %},{% endif %}{% endfor %}],
+  values: [{% for row in monthly_data %}{{ row[1] }}{% if not loop.last %},{% endif %}{% endfor %}]
+};
+const ctx = document.getElementById('revenueChart');
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: chartData.labels,
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: chartData.values,
+      backgroundColor: 'rgba(27,67,50,0.12)',
+      borderColor: '#2D6A4F',
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ₹' + ctx.raw.toLocaleString('en-IN')
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: {
+          callback: val => '₹' + val.toLocaleString('en-IN'),
+          font: { family: 'DM Sans', size: 11 }
+        }
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { family: 'DM Sans', size: 11 } }
+      }
+    }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

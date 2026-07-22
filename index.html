@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">FarmRental - Smart Agricultural Equipment Rental</title>
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* ── LANDING-SPECIFIC STYLES ── */
+    .land-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1rem 0;
+      background: transparent;
+      transition: background 0.3s;
+    }
+    .land-nav.scrolled {
+      background: var(--forest);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    }
+    .land-nav .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--white); text-decoration: none;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .land-nav .nav-logo .icon {
+      width: 34px; height: 34px; background: var(--gold);
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: center; font-size: 1rem; color: var(--forest);
+    }
+    .btn-nav-white {
+      background: transparent; color: rgba(255,255,255,0.8);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50px; padding: 0.45rem 1.2rem;
+      font-size: 0.88rem; font-weight: 500;
+      text-decoration: none; transition: var(--transition);
+    }
+    .btn-nav-white:hover { background: rgba(255,255,255,0.15); color: white; }
+    .btn-nav-filled {
+      background: var(--gold); color: var(--forest);
+      border: none; border-radius: 50px;
+      padding: 0.45rem 1.3rem; font-size: 0.88rem; font-weight: 700;
+      text-decoration: none; transition: var(--transition);
+    }
+    .btn-nav-filled:hover { background: var(--gold-light); color: var(--forest); transform: translateY(-1px); }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      background: var(--forest);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 70% at 80% 50%, rgba(82,183,136,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 10% 80%, rgba(212,160,23,0.08) 0%, transparent 50%);
+    }
+    /* Animated circles */
+    .hero-circle { position: absolute; border-radius: 50%; pointer-events: none; }
+    .hc1 { width: 500px; height: 500px; right: -100px; top: -100px;
+            border: 1px solid rgba(255,255,255,0.05); animation: rotSlow 30s linear infinite; }
+    .hc2 { width: 350px; height: 350px; right: 50px; top: -20px;
+            border: 1px solid rgba(212,160,23,0.12); animation: rotSlow 20s linear infinite reverse; }
+    .hc3 { width: 160px; height: 160px; right: 220px; top: 160px;
+            background: rgba(212,160,23,0.06); }
+    @keyframes rotSlow { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+    .hero-content { position: relative; z-index: 2; padding: 8rem 0 5rem; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(212,160,23,0.15); border: 1px solid rgba(212,160,23,0.3);
+      border-radius: 50px; padding: 0.35rem 1rem;
+      color: var(--gold-light); font-size: 0.82rem; font-weight: 600;
+      letter-spacing: 0.04em; margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 900; color: var(--white);
+      line-height: 1.1; margin-bottom: 1.4rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .hero-h1 .gold { color: var(--gold-light); }
+    .hero-p {
+      color: rgba(255,255,255,0.65); font-size: 1.1rem;
+      max-width: 520px; line-height: 1.7;
+      margin-bottom: 2.5rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .hero-cta {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+    .btn-hero-primary {
+      background: var(--gold); color: var(--forest);
+      border: none; border-radius: 50px;
+      padding: 0.85rem 2rem; font-size: 1rem; font-weight: 700;
+      text-decoration: none; transition: var(--transition);
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-hero-primary:hover {
+      background: var(--gold-light); color: var(--forest);
+      transform: translateY(-3px); box-shadow: 0 10px 30px rgba(212,160,23,0.4);
+    }
+    .btn-hero-ghost {
+      background: transparent; color: rgba(255,255,255,0.85);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 50px; padding: 0.85rem 2rem;
+      font-size: 1rem; font-weight: 500;
+      text-decoration: none; transition: var(--transition);
+    }
+    .btn-hero-ghost:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    /* Hero stats row */
+    .hero-stats {
+      display: flex; gap: 2.5rem; margin-top: 3.5rem;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+    .hero-stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700; color: var(--white);
+    }
+    .hero-stat-val .counter { display: inline-block; }
+    .hero-stat-label {
+      font-size: 0.82rem; color: rgba(255,255,255,0.5);
+      margin-top: 0.1rem; letter-spacing: 0.03em;
+    }
+
+    /* Hero visual side */
+    .hero-visual {
+      position: relative; z-index: 2;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .hero-card-float {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px; padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .hero-card-float.offset { margin-left: 2rem; }
+
+    /* Stats section */
+    .section-stats {
+      background: var(--cream); padding: 5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-pill {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 2rem;
+      text-align: center; box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+    .stat-pill:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .stat-pill-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem; font-weight: 700; color: var(--forest);
+    }
+    .stat-pill-label { color: var(--ink-muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .stat-pill-icon {
+      font-size: 2rem; margin-bottom: 0.8rem; display: block;
+    }
+
+    /* How it works */
+    .section-how { padding: 6rem 0; background: var(--white); }
+    .section-label {
+      font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--forest-light); margin-bottom: 0.6rem;
+    }
+    .section-h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; font-weight: 700; color: var(--forest);
+      margin-bottom: 1rem;
+    }
+    .step-card {
+      background: var(--cream); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 2rem;
+      height: 100%; transition: var(--transition);
+      position: relative; overflow: hidden;
+    }
+    .step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .step-card::before {
+      content: attr(data-step);
+      position: absolute; top: -10px; right: 16px;
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem; font-weight: 900;
+      color: rgba(27,67,50,0.05); line-height: 1;
+      pointer-events: none;
+    }
+    .step-icon {
+      width: 52px; height: 52px;
+      background: var(--forest); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; margin-bottom: 1.2rem;
+    }
+    .step-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--forest); margin-bottom: 0.5rem; }
+    .step-desc { color: var(--ink-muted); font-size: 0.92rem; line-height: 1.6; }
+
+    /* Categories */
+    .section-cats { padding: 5rem 0; background: var(--cream); }
+    .cat-chip {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 1.5rem;
+      text-align: center; cursor: pointer; transition: var(--transition);
+      text-decoration: none; display: block;
+    }
+    .cat-chip:hover { background: var(--forest); border-color: var(--forest); transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .cat-chip:hover .cat-emoji { transform: scale(1.2); }
+    .cat-chip:hover .cat-name { color: white; }
+    .cat-emoji { font-size: 2rem; display: block; margin-bottom: 0.6rem; transition: transform 0.3s; }
+    .cat-name { font-weight: 600; color: var(--forest); font-size: 0.92rem; transition: color 0.3s; }
+
+    /* CTA Banner */
+    .section-cta { padding: 5rem 0; background: var(--forest); }
+    .cta-box { text-align: center; }
+    .cta-h2 { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: white; margin-bottom: 1rem; }
+    .cta-h2 span { color: var(--gold-light); }
+    .cta-p { color: rgba(255,255,255,0.6); font-size: 1.05rem; margin-bottom: 2.5rem; }
+
+    /* Footer */
+    .land-footer {
+      background: #0E2318; padding: 2rem 0;
+      color: rgba(255,255,255,0.4); font-size: 0.88rem; text-align: center;
+    }
+    .land-footer a { color: rgba(255,255,255,0.4); text-decoration: none; }
+    .land-footer a:hover { color: var(--gold-light); }
+  </style>
+</head>
+<body style="background: var(--forest);">
+
+<!-- NAV -->
+<nav class="land-nav" id="landNav">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a href="/" class="nav-logo">
+  <img src="{{ url_for('static', filename='favicon_128.png') }}" 
+       alt="logo" 
+       style="height:34px; border-radius:6px;">
+  FarmRental
+</a>
+    <div class="d-flex align-items-center gap-2">
+      <button id="lang-toggle-btn" onclick="toggleMarathi()" style="background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.9);border:1.5px solid rgba(255,255,255,0.28);border-radius:50px;padding:0.38rem 0.95rem;font-size:0.84rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;transition:all 0.2s;letter-spacing:0.01em;" onmouseover="this.style.background='rgba(255,255,255,0.22)';this.style.color='white'" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.9)'">
+        <span style="font-size:1rem;">🇮🇳</span> मराठी
+      </button>
+      <a href="/login" class="btn-nav-white"><span data-mr="साइन इन">Sign In</span></a>
+      <a href="/register" class="btn-nav-filled"><span data-mr="सुरुवात करा">Get Started</span></a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-circle hc1"></div>
+  <div class="hero-circle hc2"></div>
+  <div class="hero-circle hc3"></div>
+  <div class="container hero-content">
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-8 mx-auto text-center">
+        <span class="hero-eyebrow">
+          <i class="fas fa-seedling"></i>
+          <span data-mr="भारताचे स्मार्ट शेती उपकरण व्यासपीठ">India's Smart Farm Equipment Platform</span>
+        </span>
+        <h1 class="hero-h1">
+          <span data-mr="तुमच्या शेतासाठी">Rent the machines</span><br>
+          <span data-mr="यंत्रे भाड्याने घ्या.">your farm <span class="gold">needs.</span></span>
+        </h1>
+        <p class="hero-p" style="margin-left:auto; margin-right:auto;">
+          <span data-mr="स्थानिक उपकरण मालकांशी जोडा. ट्रॅक्टर, हार्वेस्टर आणि रोटाव्हेटर भाड्याने घ्या — स्वस्त, जलद आणि पारदर्शकपणे.">Connect with local equipment owners. Book tractors, harvesters, and rotavators — affordably, quickly, and with full transparency.</span>
+        </p>
+        <div class="hero-cta" style="justify-content:center;">
+          <a href="/register" class="btn-hero-primary">
+            <span data-mr="भाड्याने सुरू करा">Start Renting</span> <i class="fas fa-arrow-right"></i>
+          </a>
+          <a href="/login" class="btn-hero-ghost">
+            <span data-mr="माझे खाते आहे">I Have an Account</span>
+          </a>
+        </div>
+        <div class="hero-stats" style="justify-content:center;">
+          <div>
+            <div class="hero-stat-val">{{ equip_count }}+</div>
+            <div class="hero-stat-label"><span data-mr="यंत्रे नोंदवली">Machines Listed</span></div>
+          </div>
+          <div style="width:1px; background:rgba(255,255,255,0.1);"></div>
+          <div>
+            <div class="hero-stat-val">{{ farmer_count }}+</div>
+            <div class="hero-stat-label"><span data-mr="सक्रिय शेतकरी">Active Farmers</span></div>
+          </div>
+          <div style="width:1px; background:rgba(255,255,255,0.1);"></div>
+          <div>
+            <div class="hero-stat-val">{{ booking_count }}+</div>
+            <div class="hero-stat-label"><span data-mr="बुकिंग झाले">Bookings Done</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section-stats">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-pill">
+          <span class="stat-pill-icon">🚜</span>
+          <div class="stat-pill-val">{{ equip_count }}+</div>
+          <div class="stat-pill-label"><span data-mr="उपकरणे उपलब्ध">Machines Available</span></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-pill">
+          <span class="stat-pill-icon">🌾</span>
+          <div class="stat-pill-val">{{ farmer_count }}+</div>
+          <div class="stat-pill-label"><span data-mr="नोंदणीकृत शेतकरी">Registered Farmers</span></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-pill">
+          <span class="stat-pill-icon">✅</span>
+          <div class="stat-pill-val">{{ booking_count }}+</div>
+          <div class="stat-pill-label"><span data-mr="यशस्वी बुकिंग">Successful Bookings</span></div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-pill">
+          <span class="stat-pill-icon">📍</span>
+          <div class="stat-pill-val">10+</div>
+          <div class="stat-pill-label"><span data-mr="जिल्हे समाविष्ट">Districts Covered</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section-how">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p class="section-label"><span data-mr="हे कसे काम करते">How It Works</span></p>
+      <h2 class="section-h2"><span data-mr="नोंदणीपासून कापणीपर्यंत ३ पायऱ्यात">From signup to harvest in 3 steps</span></h2>
+      <p style="color:var(--ink-muted); max-width:480px; margin:0 auto; font-size:0.95rem; line-height:1.7;">
+        <span data-mr="तुम्ही शेतकरी असाल किंवा उपकरण मालक — आम्ही ते सोपे करतो.">Whether you're a farmer looking to rent or an owner with idle machines — we make it seamless.</span>
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="step-card" data-step="1">
+          <div class="step-icon">🌱</div>
+          <h4 class="step-title"><span data-mr="तुमचे खाते तयार करा">Create Your Account</span></h4>
+          <p class="step-desc"><span data-mr="शेतकरी किंवा मालक म्हणून नोंदणी करा. एक मिनिटापेक्षा कमी वेळ लागतो.">Register as a Farmer (seeker) or Owner (provider). Takes under a minute.</span></p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="step-card" data-step="2">
+          <div class="step-icon">🔍</div>
+          <h4 class="step-title"><span data-mr="शोधा आणि बुक करा">Browse & Book</span></h4>
+          <p class="step-desc"><span data-mr="शेतकरी नाव किंवा प्रकारानुसार शोधतात. तारखा निवडा, किंमत पहा आणि बुकिंग विनंती पाठवा.">Farmers search by name or category. Select dates, see live price estimates, and send a booking request.</span></p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="step-card" data-step="3">
+          <div class="step-icon">🤝</div>
+          <h4 class="step-title"><span data-mr="पुष्टी करा आणि कमवा">Confirm & Earn</span></h4>
+          <p class="step-desc"><span data-mr="मालक विनंत्या तपासतात आणि एका क्लिकने मंजूर करतात. शेतकऱ्यांना सूचना मिळते आणि ते डॅशबोर्डमध्ये बुकिंग ट्रॅक करू शकतात.">Owners review requests and approve with one click. Farmers get notified and can track all bookings in their dashboard.</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+{% if categories %}
+<section class="section-cats">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p class="section-label"><span data-mr="उपकरणांचे प्रकार">Equipment Types</span></p>
+      <h2 class="section-h2"><span data-mr="तुमच्या शेतासाठी काय हवे ते शोधा">Find what your farm needs</span></h2>
+    </div>
+    <div class="row g-3 justify-content-center">
+      {% set icons = {'Tractor':'🚜', 'Harvester':'🌾', 'Rotavator':'⚙️', 'Cultivator':'🔧', 'Sprayer':'💧'} %}
+      {% for cat in categories %}
+      <div class="col-6 col-sm-4 col-md-2">
+        <a href="/farmer?category={{ cat }}" class="cat-chip">
+          <span class="cat-emoji">{{ icons.get(cat, '🛠️') }}</span>
+          <span class="cat-name">{{ cat }}</span>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA BANNER -->
+<section class="section-cta">
+  <div class="container">
+    <div class="cta-box">
+      <h2 class="cta-h2"><span data-mr="सुरू करण्यास तयार आहात?">Ready to <span>get started?</span></span></h2>
+      <p class="cta-p"><span data-mr="हजारो शेतकरी आणि उपकरण मालक आधीच FarmRental वापरत आहेत.">Join thousands of farmers and equipment owners already using FarmRental.</span></p>
+      <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+        <a href="/register?role=farmer" class="btn-hero-primary">
+          <span data-mr="मला उपकरणे हवी आहेत">I Need Equipment</span> <i class="fas fa-seedling ms-1"></i>
+        </a>
+        <a href="/register?role=owner" class="btn-hero-ghost">
+          <span data-mr="माझ्याकडे उपकरणे आहेत">I Have Equipment</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="land-footer">
+  <div class="container">
+    <p class="mb-1">
+      <strong style="color:rgba(255,255,255,0.6);">🌾 FarmRental</strong>
+      &nbsp;·&nbsp; Smart Agricultural Equipment Rental
+    </p>
+    <p><a href="/login">Login</a> &nbsp;·&nbsp; <a href="/register">Register</a></p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='marathi.js') }}"></script>
+<script>
+  // Sticky nav
+  window.addEventListener('scroll', () => {
+    document.getElementById('landNav').classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.stat-pill, .step-card, .cat-chip').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+  
+</script>
+<script>
+  const originalToggle = window.toggleMarathi;
+
+  window.toggleMarathi = function () {
+    
+    originalToggle();
+
+    const title = document.getElementById("page-title");
+
+    if (document.documentElement.lang === "mr" || title.innerText.includes("FarmRental")) {
+      title.innerText = "फार्मरेंटल - स्मार्ट शेती उपकरण भाडे";
+    } else {
+      title.innerText = "FarmRental - Smart Agricultural Equipment Rental";
+    }
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="page-banner">
+  <div class="page-banner-deco"></div>
+  <div class="container">
+    <a href="/owner" style="color:rgba(255,255,255,0.6); font-size:0.88rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.8rem;">
+      <i class="fas fa-arrow-left"></i> <span data-mr="डॅशबोर्डकडे परत">Back to Dashboard</span>
+    </a>
+    <h1 class="page-title"><span data-mr="नवीन उपकरण नोंदवा">List New Equipment</span></h1>
+    <p class="page-subtitle"><span data-mr="तुमच्या भाड्याच्या यादीत यंत्र जोडा">Add a machine to your rental inventory</span></p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:3rem; padding-bottom:4rem;">
+  <div class="form-page-card">
+    <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.4rem;">
+      <div style="width:44px;height:44px;background:rgba(27,67,50,0.08);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">🚜</div>
+      <h2 class="form-page-title"><span data-mr="यंत्राचे तपशील">Machine Details</span></h2>
+    </div>
+    <p class="form-page-sub"><span data-mr="खाली तपशील भरा. तुमची नोंद शेतकऱ्यांना लगेच दिसेल.">Fill in the details below. Your listing will be visible to farmers immediately.</span></p>
+
+    <form action="/add_equipment" method="POST">
+      <div class="field-group">
+        <label class="field-label"><span data-mr="उपकरणाचे नाव">Equipment Name</span></label>
+        <div class="field-wrap">
+          <i class="fas fa-tractor field-icon"></i>
+          <input type="text" name="name" class="form-control" placeholder="e.g. John Deere 5310 Tractor" data-mr-ph="उदा. जॉन डीअर ५३१० ट्रॅक्टर" required>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label"><span data-mr="प्रकार">Category</span></label>
+        <div class="field-wrap">
+          <i class="fas fa-tag field-icon"></i>
+          <select name="category" class="form-control">
+            <option value="Tractor"  data-mr="🚜 ट्रॅक्टर">🚜 Tractor</option>
+            <option value="Harvester" data-mr="🌾 हार्वेस्टर">🌾 Harvester</option>
+            <option value="Rotavator" data-mr="⚙️ रोटाव्हेटर">⚙️ Rotavator</option>
+            <option value="Cultivator" data-mr="🔧 कल्टिव्हेटर">🔧 Cultivator</option>
+            <option value="Sprayer"   data-mr="💧 स्प्रेअर">💧 Sprayer</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label"><span data-mr="प्रति तास किंमत (₹)">Price Per Hour (₹)</span></label>
+        <div class="field-wrap">
+          <i class="fas fa-rupee-sign field-icon"></i>
+          <input type="number" name="price" class="form-control" placeholder="e.g. 500" data-mr-ph="उदा. ५००" min="1" required>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom:1.8rem;">
+        <label class="field-label"><span data-mr="वर्णन"><span data-mr="वर्णन">Description</span> <span style="font-weight:400; text-transform:none; letter-spacing:0; color:var(--ink-muted);" data-mr="(ऐच्छिक)">(optional)</span></span></label>
+        <textarea name="description" class="form-control no-icon" style="padding-left:0.9rem;"
+                  placeholder="Condition, year, horsepower, any included services..." data-mr-ph="स्थिती, वर्ष, अश्वशक्ती, समाविष्ट सेवा..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary-premium">
+        <i class="fas fa-plus-circle"></i> <span data-mr="उपकरण नोंदवा">List Equipment</span>
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

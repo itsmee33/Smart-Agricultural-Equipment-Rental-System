@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-mr="नोंदणी — फार्मरेंटल">Register — FarmRental</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="auth-page">
+  <!-- Left Panel -->
+  <div class="auth-left">
+    <div class="auth-left-logo">
+      <div class="logo-icon">🌾</div>
+      FarmRental
+    </div>
+
+    <p class="page-badge"><span data-mr="५०,०००+ शेतकरी आणि मालकांसोबत सामील व्हा">Join 50,000+ farmers & owners</span></p>
+    <h1 class="auth-headline">
+      <span data-mr="तुमची शेते.">Your fields.</span><br>
+      <span data-mr="तुमची यंत्रे.">Your machines.</span>
+    </h1>
+    <p class="auth-sub">
+      <span data-mr="तुमच्याकडे उपकरणे असो किंवा हवी असो — FarmRental संपूर्ण भारतात कृषी समुदायाला जोडतो.">Whether you own equipment or need it — FarmRental connects the agricultural community across India.</span>
+    </p>
+
+    <!-- Role info cards -->
+    <div style="display:flex; flex-direction:column; gap:0.8rem; max-width:380px;">
+      <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1rem 1.2rem; display:flex; gap:1rem; align-items:flex-start;">
+        <span style="font-size:1.4rem;">🚜</span>
+        <div>
+          <p style="color:var(--white); font-weight:600; font-size:0.9rem; margin-bottom:0.1rem;"><span data-mr="शेतकरी (भाडेकरू)">Farmer (Seeker)</span></p>
+          <p style="color:rgba(255,255,255,0.55); font-size:0.83rem; margin:0;"><span data-mr="स्थानिक मालकांकडून उपकरणे शोधा आणि भाड्याने घ्या">Browse and rent equipment from local owners</span></p>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:1rem 1.2rem; display:flex; gap:1rem; align-items:flex-start;">
+        <span style="font-size:1.4rem;">🏭</span>
+        <div>
+          <p style="color:var(--white); font-weight:600; font-size:0.9rem; margin-bottom:0.1rem;"><span data-mr="मालक (पुरवठादार)">Owner (Provider)</span></p>
+          <p style="color:rgba(255,255,255,0.55); font-size:0.83rem; margin:0;"><span data-mr="तुमची यंत्रे नोंदवा आणि भाडे उत्पन्न मिळवा">List your machines and earn rental income</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div style="position:absolute; bottom:60px; right:80px; width:200px; height:200px; border-radius:50%; border: 1px solid rgba(255,255,255,0.08);"></div>
+    <div style="position:absolute; bottom:30px; right:30px; width:300px; height:300px; border-radius:50%; border: 1px solid rgba(255,255,255,0.05);"></div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="auth-right">
+    <div style="position:absolute; top:1.2rem; right:1.5rem; z-index:10;">
+      <button id="lang-toggle-btn" onclick="toggleMarathi()" style="background:var(--forest);color:white;border:none;border-radius:50px;padding:0.4rem 1rem;font-size:0.82rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.4rem;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+        <span>🇮🇳</span> मराठी
+      </button>
+    </div>
+    <div class="auth-card">
+      <h2 class="auth-card-title"><span data-mr="खाते तयार करा">Create account</span></h2>
+      <p class="auth-card-sub"><span data-mr="मोफत सुरू करण्यासाठी तुमचे तपशील भरा">Fill in your details to get started for free</span></p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="flash-msg" style="margin-bottom:1rem;">
+              <i class="fas fa-check-circle" style="color:var(--forest-light);"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form action="/register" method="POST">
+        <div class="field-group">
+          <label class="field-label"><span data-mr="वापरकर्ता नाव">Username</span></label>
+          <div class="field-wrap">
+            <i class="fas fa-user field-icon"></i>
+            <input type="text" name="username" class="form-control" placeholder="Choose a username" data-mr-ph="वापरकर्ता नाव निवडा" required autocomplete="username">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label"><span data-mr="पासवर्ड">Password</span></label>
+          <div class="field-wrap">
+            <i class="fas fa-lock field-icon"></i>
+            <input type="password" name="password" class="form-control" placeholder="Create a password" data-mr-ph="पासवर्ड तयार करा" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label"><span data-mr="मी आहे">I am a</span></label>
+          <div class="field-wrap">
+            <i class="fas fa-id-card field-icon"></i>
+            <select name="role" class="form-control">
+              <option value="farmer" data-mr="🌱 शेतकरी — मला उपकरणे भाड्याने घ्यायची आहेत">🌱 Farmer — I need to rent equipment</option>
+              <option value="owner"  data-mr="🚜 मालक — मला माझी उपकरणे नोंदवायची आहेत">🚜 Owner — I want to list my equipment</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-bottom:1.8rem;">
+          <label class="field-label"><span data-mr="फोन नंबर">Phone Number</span></label>
+          <div class="field-wrap">
+            <i class="fas fa-phone field-icon"></i>
+            <input type="tel" name="contact" class="form-control" placeholder="+91 XXXXX XXXXX" data-mr-ph="+९१ XXXXX XXXXX" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-premium">
+          <span data-mr="खाते तयार करा">Create Account</span> <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div style="text-align:center; margin-top:1.5rem;">
+        <p style="color:var(--ink-muted); font-size:0.9rem; margin-bottom:0.3rem;"><span data-mr="आधीच खाते आहे?">Already have an account?</span></p>
+        <a href="/login" class="link-forest"><span data-mr="इथे साइन इन करा">Sign in here</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='marathi.js') }}"></script>
+</body>
+</html>

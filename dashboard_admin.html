@@ -1,0 +1,363 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+  .admin-hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    padding: 2.5rem 0 2rem;
+    margin-bottom: 2rem;
+  }
+  .admin-hero h1 { color: #fff; font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.25rem; }
+  .admin-hero p  { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+
+  .stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.07);
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: transform 0.18s, box-shadow 0.18s;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.11); }
+  .stat-icon {
+    width: 54px; height: 54px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; flex-shrink: 0;
+  }
+  .stat-val   { font-size: 1.7rem; font-weight: 800; color: #1a1a2e; line-height: 1; }
+  .stat-label { font-size: 0.78rem; color: #888; font-weight: 500; margin-top: 0.2rem; }
+
+  .admin-section {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  .admin-section-header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fafafa;
+  }
+  .admin-section-header h5 {
+    margin: 0; font-weight: 700; font-size: 1rem; color: #1a1a2e;
+  }
+  .admin-table { font-size: 0.85rem; margin: 0; }
+  .admin-table th { background: #f8f9fa; font-weight: 600; font-size: 0.78rem; color: #555; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid #eee; }
+  .admin-table td { vertical-align: middle; border-color: #f0f0f0; }
+  .admin-table tr:hover td { background: #fafcff; }
+
+  .role-badge {
+    font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.65rem;
+    border-radius: 50px; text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .role-admin  { background: #fef3c7; color: #92400e; }
+  .role-owner  { background: #d1fae5; color: #065f46; }
+  .role-farmer { background: #dbeafe; color: #1e40af; }
+
+  .status-badge {
+    font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.6rem;
+    border-radius: 50px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .status-confirmed { background: #d1fae5; color: #065f46; }
+  .status-pending   { background: #fef3c7; color: #92400e; }
+  .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+  .btn-danger-sm, .btn-success-sm, .btn-warning-sm {
+    font-size: 0.76rem; padding: 0.3rem 0.7rem; border-radius: 7px;
+    font-weight: 600; border: none; cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-danger-sm  { background: #fee2e2; color: #991b1b; }
+  .btn-danger-sm:hover  { background: #fecaca; }
+  .btn-success-sm { background: #d1fae5; color: #065f46; }
+  .btn-success-sm:hover { background: #a7f3d0; }
+  .btn-warning-sm { background: #fef3c7; color: #92400e; }
+  .btn-warning-sm:hover { background: #fde68a; }
+
+  .tab-pills .nav-link {
+    font-size: 0.84rem; font-weight: 600; color: #666; border-radius: 8px;
+    padding: 0.45rem 1rem;
+  }
+  .tab-pills .nav-link.active { background: #1a1a2e; color: #fff; }
+
+  .chart-bar-wrap { padding: 1.5rem; }
+  .chart-label { font-size: 0.75rem; color: #888; margin-bottom: 0.2rem; }
+  .chart-bar-row { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.6rem; }
+  .chart-bar-label { min-width: 70px; font-size: 0.78rem; color: #555; text-align: right; }
+  .chart-bar-outer { flex: 1; background: #f0f0f0; border-radius: 50px; height: 12px; overflow: hidden; }
+  .chart-bar-inner { height: 100%; border-radius: 50px; background: linear-gradient(90deg, #0f3460, #16213e); transition: width 0.6s; }
+  .chart-bar-val { font-size: 0.78rem; color: #444; font-weight: 600; min-width: 70px; }
+</style>
+
+<!-- Hero -->
+<div class="admin-hero">
+  <div class="container">
+    <h1 data-mr="प्रशासक नियंत्रण पॅनेल"><i class="fas fa-shield-alt me-2" style="color:#f59e0b;"></i>Admin Control Panel</h1>
+    <p data-mr="FarmRental प्लॅटफॉर्मचे संपूर्ण व्यवस्थापन">Full platform management for FarmRental</p>
+  </div>
+</div>
+
+<div class="container pb-5" style="max-width:1200px;">
+
+  <!-- STATS ROW -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#dbeafe;">👨‍🌾</div>
+        <div>
+          <div class="stat-val">{{ total_farmers }}</div>
+          <div class="stat-label" data-mr="शेतकरी">Farmers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#d1fae5;">🏭</div>
+        <div>
+          <div class="stat-val">{{ total_owners }}</div>
+          <div class="stat-label" data-mr="मालक">Owners</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fef3c7;">🚜</div>
+        <div>
+          <div class="stat-val">{{ total_equipment }}</div>
+          <div class="stat-label" data-mr="उपकरणे">Equipment</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#ede9fe;">📋</div>
+        <div>
+          <div class="stat-val">{{ total_bookings }}</div>
+          <div class="stat-label" data-mr="बुकिंग">Bookings</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#fee2e2;">⏳</div>
+        <div>
+          <div class="stat-val">{{ pending_bookings }}</div>
+          <div class="stat-label" data-mr="प्रलंबित">Pending</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#d1fae5;">💰</div>
+        <div>
+          <div class="stat-val" style="font-size:1.2rem;">₹{{ "%.0f"|format(total_revenue) }}</div>
+          <div class="stat-label" data-mr="एकूण महसूल">Revenue</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <ul class="nav tab-pills mb-3" id="adminTabs">
+    <li class="nav-item"><a class="nav-link active" href="#" onclick="showTab('users',this)"><i class="fas fa-users me-1"></i><span data-mr="वापरकर्ते">Users</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('equipment',this)"><i class="fas fa-tractor me-1"></i><span data-mr="उपकरणे">Equipment</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('bookings',this)"><i class="fas fa-calendar-check me-1"></i><span data-mr="बुकिंग">Bookings</span></a></li>
+    <li class="nav-item"><a class="nav-link" href="#" onclick="showTab('revenue',this)"><i class="fas fa-chart-bar me-1"></i><span data-mr="महसूल">Revenue</span></a></li>
+  </ul>
+
+  <!-- USERS TAB -->
+  <div id="tab-users" class="admin-section">
+    <div class="admin-section-header">
+      <h5><i class="fas fa-users me-2" style="color:#3b82f6;"></i><span data-mr="सर्व वापरकर्ते">All Users</span></h5>
+      <span class="badge bg-secondary">{{ all_users|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th data-mr="वापरकर्तानाव">Username</th>
+            <th data-mr="भूमिका">Role</th>
+            <th data-mr="संपर्क">Contact</th>
+            <th data-mr="क्रिया">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in all_users %}
+          <tr>
+            <td class="text-muted">#{{ u[0] }}</td>
+            <td><i class="fas fa-user-circle me-1 text-muted"></i>{{ u[1] }}</td>
+            <td>
+              <span class="role-badge role-{{ u[2] }}">{{ u[2] }}</span>
+            </td>
+            <td>{{ u[3] or '—' }}</td>
+            <td>
+              {% if u[2] != 'admin' %}
+              <form method="POST" action="/admin/delete_user/{{ u[0] }}" style="display:inline;"
+                    onsubmit="return confirm('Delete user {{ u[1] }}? This cannot be undone.');">
+                <button type="submit" class="btn-danger-sm">
+                  <i class="fas fa-trash me-1"></i><span data-mr="हटवा">Delete</span>
+                </button>
+              </form>
+              {% else %}
+              <span class="text-muted" style="font-size:0.78rem;">Protected</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EQUIPMENT TAB -->
+  <div id="tab-equipment" class="admin-section" style="display:none;">
+    <div class="admin-section-header">
+      <h5><i class="fas fa-tractor me-2" style="color:#f59e0b;"></i><span data-mr="सर्व उपकरणे">All Equipment</span></h5>
+      <span class="badge bg-secondary">{{ all_equipment|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th data-mr="नाव">Name</th>
+            <th data-mr="श्रेणी">Category</th>
+            <th data-mr="दर (₹/तास)">Rate (₹/hr)</th>
+            <th data-mr="मालक">Owner</th>
+            <th data-mr="क्रिया">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in all_equipment %}
+          <tr>
+            <td class="text-muted">#{{ e[0] }}</td>
+            <td><strong>{{ e[1] }}</strong></td>
+            <td><span class="badge" style="background:#f0fdf4;color:#166534;font-size:0.75rem;">{{ e[2] }}</span></td>
+            <td>₹{{ e[3] }}</td>
+            <td>{{ e[5] }}</td>
+            <td>
+              <form method="POST" action="/admin/delete_equipment/{{ e[0] }}" style="display:inline;"
+                    onsubmit="return confirm('Remove {{ e[1] }} from the platform?');">
+                <button type="submit" class="btn-danger-sm">
+                  <i class="fas fa-trash me-1"></i><span data-mr="हटवा">Delete</span>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOOKINGS TAB -->
+  <div id="tab-bookings" class="admin-section" style="display:none;">
+    <div class="admin-section-header">
+      <h5><i class="fas fa-calendar-check me-2" style="color:#8b5cf6;"></i><span data-mr="सर्व बुकिंग">All Bookings</span></h5>
+      <span class="badge bg-secondary">{{ all_bookings|length }}</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th data-mr="उपकरण">Equipment</th>
+            <th data-mr="शेतकरी">Farmer</th>
+            <th data-mr="मालक">Owner</th>
+            <th data-mr="तारखा">Dates</th>
+            <th data-mr="रक्कम">Amount</th>
+            <th data-mr="स्थिती">Status</th>
+            <th data-mr="क्रिया">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in all_bookings %}
+          <tr>
+            <td class="text-muted">#{{ b[0] }}</td>
+            <td>{{ b[1] }}</td>
+            <td>{{ b[2] }}</td>
+            <td>{{ b[3] }}</td>
+            <td style="font-size:0.78rem;">{{ b[4] }}<br><span class="text-muted">→ {{ b[5] }}</span></td>
+            <td><strong>₹{{ "%.0f"|format(b[6]) }}</strong></td>
+            <td><span class="status-badge status-{{ b[7]|lower }}">{{ b[7] }}</span></td>
+            <td>
+              {% if b[7] == 'Pending' %}
+              <form method="POST" action="/admin/confirm_booking/{{ b[0] }}" style="display:inline;">
+                <button type="submit" class="btn-success-sm me-1">
+                  <i class="fas fa-check"></i>
+                </button>
+              </form>
+              <form method="POST" action="/admin/cancel_booking/{{ b[0] }}" style="display:inline;"
+                    onsubmit="return confirm('Cancel this booking?');">
+                <button type="submit" class="btn-danger-sm">
+                  <i class="fas fa-times"></i>
+                </button>
+              </form>
+              {% elif b[7] == 'Confirmed' %}
+              <form method="POST" action="/admin/cancel_booking/{{ b[0] }}" style="display:inline;"
+                    onsubmit="return confirm('Force-cancel confirmed booking #{{ b[0] }}?');">
+                <button type="submit" class="btn-warning-sm">
+                  <i class="fas fa-ban me-1"></i><span data-mr="रद्द करा">Cancel</span>
+                </button>
+              </form>
+              {% else %}
+              <span class="text-muted" style="font-size:0.78rem;">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REVENUE TAB -->
+  <div id="tab-revenue" class="admin-section" style="display:none;">
+    <div class="admin-section-header">
+      <h5><i class="fas fa-chart-bar me-2" style="color:#10b981;"></i><span data-mr="महसूल अहवाल">Revenue Report (Last 6 months)</span></h5>
+    </div>
+    <div class="chart-bar-wrap">
+      {% if monthly_data %}
+        {% set max_val = monthly_data | map(attribute=1) | max %}
+        {% for month, amt in monthly_data %}
+        <div class="chart-bar-row">
+          <div class="chart-bar-label">{{ month }}</div>
+          <div class="chart-bar-outer">
+            <div class="chart-bar-inner" style="width: {{ (amt / max_val * 100)|int if max_val > 0 else 0 }}%;"></div>
+          </div>
+          <div class="chart-bar-val">₹{{ "%.0f"|format(amt) }}</div>
+        </div>
+        {% endfor %}
+        <div class="mt-4 p-3" style="background:#f8fdf9;border-radius:10px;border:1px solid #d1fae5;">
+          <div style="font-size:0.85rem;color:#555;">
+            <span style="font-weight:700;color:#1a1a2e;">Total Platform Revenue: </span>
+            <span style="font-size:1.2rem;font-weight:800;color:#065f46;">₹{{ "%.0f"|format(total_revenue) }}</span>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            <span style="font-weight:600;">Confirmed Bookings: </span>{{ total_bookings - pending_bookings }}
+          </div>
+        </div>
+      {% else %}
+        <p class="text-muted text-center py-4">No confirmed revenue data yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(name, el) {
+  event.preventDefault();
+  ['users','equipment','bookings','revenue'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = (t === name) ? '' : 'none';
+  });
+  document.querySelectorAll('#adminTabs .nav-link').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+{% endblock %}

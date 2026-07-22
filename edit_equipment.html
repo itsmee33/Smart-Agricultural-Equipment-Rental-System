@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="page-banner">
+  <div class="page-banner-deco"></div>
+  <div class="container">
+    <a href="/owner" style="color:rgba(255,255,255,0.6); font-size:0.88rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.8rem;">
+      <i class="fas fa-arrow-left"></i> <span data-mr="डॅशबोर्डकडे परत">Back to Dashboard</span>
+    </a>
+    <h1 class="page-title"><span data-mr="उपकरण संपादन">Edit Equipment</span></h1>
+    <p class="page-subtitle"><span data-mr="तुमची नोंद अद्यतनित करा">Update your listing details</span></p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:3rem; padding-bottom:4rem;">
+  <div class="form-page-card">
+    <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:0.4rem;">
+      <div style="width:44px;height:44px;background:rgba(27,67,50,0.08);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">✏️</div>
+      <h2 class="form-page-title">Edit — {{ item[2] }}</h2>
+    </div>
+    <p class="form-page-sub"><span data-mr="या नोंदीचे तपशील अद्यतनित करा. बदल लगेच लागू होतात.">Update the details of this listing. Changes apply immediately.</span></p>
+
+    <form action="/edit_equipment/{{ item[0] }}" method="POST">
+      <div class="field-group">
+        <label class="field-label"><span data-mr="उपकरणाचे नाव">Equipment Name</span></label>
+        <div class="field-wrap">
+          <i class="fas fa-tractor field-icon"></i>
+          <input type="text" name="name" class="form-control" value="{{ item[2] }}" required>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label"><span data-mr="प्रकार">Category</span></label>
+        <div class="field-wrap">
+          <i class="fas fa-tag field-icon"></i>
+          <select name="category" class="form-control">
+            {% for cat in ['Tractor','Harvester','Rotavator','Cultivator','Sprayer'] %}
+            <option value="{{ cat }}" {% if item[3]==cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label"><span data-mr="प्रति तास किंमत (₹)">Price Per Hour (₹)</span></label>
+        <div class="field-wrap">
+          <i class="fas fa-rupee-sign field-icon"></i>
+          <input type="number" name="price" class="form-control" value="{{ item[5] }}" min="1" required>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom:1.8rem;">
+        <label class="field-label"><span data-mr="वर्णन">Description</span></label>
+        <textarea name="description" class="form-control no-icon" style="padding-left:0.9rem;">{{ item[4] or '' }}</textarea>
+      </div>
+
+      <div style="display:flex; gap:0.8rem;">
+        <button type="submit" class="btn-primary-premium" style="flex:1;">
+          <i class="fas fa-save"></i> <span data-mr="बदल जतन करा">Save Changes</span>
+        </button>
+        <a href="/owner" class="btn-outline-forest" style="padding:0.9rem 1.5rem; font-size:0.95rem;">
+          <span data-mr="रद्द करा">Cancel</span>
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

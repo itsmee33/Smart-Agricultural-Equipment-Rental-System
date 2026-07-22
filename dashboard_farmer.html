@@ -1,0 +1,230 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="page-banner">
+  <div class="page-banner-deco"></div>
+  <div class="page-banner-deco2"></div>
+  <div class="container">
+    <p class="page-badge"><span data-mr="शेतकरी डॅशबोर्ड">Farmer Dashboard</span></p>
+    <h1 class="page-title"><span data-mr="स्वागत आहे,">Welcome,</span> {{ session.username }} 👋</h1>
+    <p class="page-subtitle"><span data-mr="जवळची सर्वोत्तम उपकरणे शोधा आणि बुक करा">Find and book the best equipment near you</span></p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:3rem; padding-bottom:4rem;">
+
+  <!-- Tabs -->
+  <div class="tab-bar animate-enter">
+    <button class="tab-item active" id="btn-find" onclick="switchTab('tab-find','btn-find')">
+      <i class="fas fa-search"></i> <span data-mr="उपकरणे शोधा">Find Equipment</span>
+      {% if equipment %}<span style="background:var(--gold);color:var(--forest);border-radius:50px;font-size:0.72rem;font-weight:700;padding:0.1rem 0.5rem;margin-left:0.2rem;">{{ equipment|length }}</span>{% endif %}
+    </button>
+    <button class="tab-item" id="btn-bookings" onclick="switchTab('tab-bookings','btn-bookings')">
+      <i class="fas fa-clock"></i> <span data-mr="माझ्या बुकिंग">My Bookings</span>
+      {% if my_bookings %}<span style="background:rgba(27,67,50,0.15);color:var(--forest);border-radius:50px;font-size:0.72rem;font-weight:700;padding:0.1rem 0.5rem;margin-left:0.2rem;">{{ my_bookings|length }}</span>{% endif %}
+    </button>
+  </div>
+
+  <!-- FIND EQUIPMENT TAB -->
+  <div id="tab-find">
+
+    <!-- Search + Filter row -->
+    <div style="background:var(--white); border:1px solid var(--border); border-radius:var(--radius-md); padding:1rem 1.2rem; margin-bottom:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+      <form method="GET" action="/farmer" style="display:flex; gap:0.6rem; flex:1; min-width:200px;">
+        <div style="position:relative; flex:1;">
+          <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--ink-muted); font-size:0.9rem; pointer-events:none;"></i>
+          <input type="text" name="search" value="{{ search }}"
+                 class="form-control no-icon" style="padding-left:2.2rem;"
+                 placeholder="Search by name, category..." data-mr-ph="नाव किंवा प्रकारानुसार शोधा...">
+          {% if active_category %}<input type="hidden" name="category" value="{{ active_category }}">{% endif %}
+        </div>
+        <button type="submit" class="btn-gold" style="white-space:nowrap;"><span data-mr="शोधा">Search</span></button>
+        {% if search or active_category %}
+          <a href="/farmer" class="btn-outline-forest" style="white-space:nowrap;"><span data-mr="साफ करा">Clear</span></a>
+        {% endif %}
+      </form>
+    </div>
+
+    <!-- Category filter chips -->
+    {% if categories %}
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+      <a href="/farmer{% if search %}?search={{ search }}{% endif %}"
+         class="cat-filter-chip {% if not active_category %}active{% endif %}">
+        <span data-mr="सर्व">All</span>
+      </a>
+      {% set cat_icons = {'Tractor':'🚜','Harvester':'🌾','Rotavator':'⚙️','Cultivator':'🔧','Sprayer':'💧'} %}
+      {% for cat in categories %}
+      <a href="/farmer?category={{ cat }}{% if search %}&search={{ search }}{% endif %}"
+         class="cat-filter-chip {% if active_category == cat %}active{% endif %}">
+        {{ cat_icons.get(cat,'🛠️') }} {{ cat }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Results count -->
+    {% if search or active_category %}
+    <p style="color:var(--ink-muted); font-size:0.88rem; margin-bottom:1rem;">
+      <span data-mr="दाखवत आहे">Showing</span> <strong style="color:var(--forest);">{{ equipment|length }}</strong> <span data-mr="निकाल">result{% if equipment|length != 1 %}s{% endif %}</span>
+      {% if search %} <span data-mr="साठी">for</span> "<strong>{{ search }}</strong>"{% endif %}
+      {% if active_category %} <span data-mr="मध्ये">in</span> <strong>{{ active_category }}</strong>{% endif %}
+    </p>
+    {% endif %}
+
+    <!-- Equipment Grid -->
+    {% if equipment %}
+    <div class="row g-4">
+      {% for item in equipment %}
+      <div class="col-md-4 col-sm-6 animate-enter">
+        <div class="equip-card">
+          <div class="equip-thumb">
+            {% if item[3] == 'Tractor' %}<span class="equip-thumb-icon">🚜</span>
+            {% elif item[3] == 'Harvester' %}<span class="equip-thumb-icon">🌾</span>
+            {% elif item[3] == 'Rotavator' %}<span class="equip-thumb-icon">⚙️</span>
+            {% elif item[3] == 'Cultivator' %}<span class="equip-thumb-icon">🔧</span>
+            {% elif item[3] == 'Sprayer' %}<span class="equip-thumb-icon">💧</span>
+            {% else %}<span class="equip-thumb-icon">🛠️</span>{% endif %}
+            <span class="equip-category-badge">{{ item[3] }}</span>
+          </div>
+          <div class="equip-body">
+            <h3 class="equip-name">{{ item[2] }}</h3>
+            <p class="equip-desc">{{ item[4] if item[4] else 'No description provided.' }}</p>
+            <!-- Owner info -->
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.8rem; padding:0.6rem 0.8rem; background:var(--cream); border-radius:8px;">
+              <div style="width:26px;height:26px;background:var(--forest);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.7rem; flex-shrink:0;">
+                <i class="fas fa-user"></i>
+              </div>
+              <div>
+                <div style="font-size:0.8rem; font-weight:600; color:var(--forest);">{{ item[6] }}</div>
+                <div style="font-size:0.75rem; color:var(--ink-muted);">{{ item[7] }}</div>
+              </div>
+            </div>
+            <div class="equip-footer">
+              <div class="equip-price">₹{{ item[5] }}<span data-mr="/तास">/hr</span></div>
+              <a href="/book/{{ item[0] }}" class="btn-book">
+                <span data-mr="आता बुक करा">Book Now</span> <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card-premium">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3 class="empty-title"><span data-mr="उपकरण सापडले नाही">No equipment found</span></h3>
+        <p class="empty-sub">
+          {% if search or active_category %}<span data-mr="तुमचा शोध बदला किंवा फिल्टर काढा.">Try changing your search or removing filters.</span>
+          {% else %}<span data-mr="सध्या कोणतेही उपकरण उपलब्ध नाही. लवकरच पुन्हा तपासा!">No equipment is available right now. Check back soon!</span>{% endif %}
+        </p>
+        {% if search or active_category %}
+        <a href="/farmer" class="btn-gold" style="margin-top:1rem; display:inline-flex;"><span data-mr="फिल्टर साफ करा">Clear Filters</span></a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- MY BOOKINGS TAB -->
+  <div id="tab-bookings" style="display:none;">
+    <div class="card-premium">
+      <div class="card-header-premium">
+        <div class="card-header-title">
+          <div class="card-header-icon"><i class="fas fa-clock"></i></div>
+          <span data-mr="भाडे इतिहास">Rental History</span>
+        </div>
+        <span style="font-size:0.82rem; color:var(--ink-muted);">{{ my_bookings|length }} <span data-mr="एकूण बुकिंग">total booking{% if my_bookings|length != 1 %}s{% endif %}</span></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="table-premium">
+          <thead>
+            <tr>
+              <th><span data-mr="उपकरण">Equipment</span></th>
+              <th><span data-mr="पासून">From</span></th>
+              <th><span data-mr="पर्यंत">To</span></th>
+              <th><span data-mr="एकूण खर्च">Total Cost</span></th>
+              <th><span data-mr="स्थिती">Status</span></th>
+              <th><span data-mr="कृती">Action</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for booking in my_bookings %}
+            <tr>
+              <td>
+                <div style="display:flex; align-items:center; gap:0.7rem;">
+                  <div class="table-equip-icon"><i class="fas fa-tractor"></i></div>
+                  <span style="font-weight:600; color:var(--forest);">{{ booking[0] }}</span>
+                </div>
+              </td>
+              <td style="color:var(--ink-soft);">{{ booking[1] }}</td>
+              <td style="color:var(--ink-soft);">{{ booking[2] }}</td>
+              <td style="font-weight:700; color:var(--forest); font-family:'Playfair Display',serif;">₹{{ "%.0f"|format(booking[3]) }}</td>
+              <td>
+                {% if booking[4] == 'Confirmed' %}
+                  <span class="status-badge status-confirmed"><i class="fas fa-check-circle"></i> <span data-mr="पुष्टी केली">Confirmed</span></span>
+                {% elif booking[4] == 'Pending' %}
+                  <span class="status-badge status-pending"><i class="fas fa-hourglass-half"></i> <span data-mr="प्रलंबित">Pending</span></span>
+                {% else %}
+                  <span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> <span data-mr="रद्द केले">Cancelled</span></span>
+                {% endif %}
+              </td>
+              <td>
+                {% if booking[4] == 'Pending' %}
+                <form action="/cancel_booking/{{ booking[5] }}" method="POST"
+                      onsubmit="return confirm(localStorage.getItem('farmrental_lang')==='mr' ? 'ही बुकिंग विनंती रद्द करायची का?' : 'Cancel this booking request?')">
+                  <button type="submit" class="btn-danger-soft" style="font-size:0.82rem; padding:0.4rem 0.9rem;">
+                    <i class="fas fa-times"></i> <span data-mr="रद्द करा">Cancel</span>
+                  </button>
+                </form>
+                {% else %}
+                  <span style="color:var(--ink-muted); font-size:0.82rem;">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="empty-state">
+                  <div class="empty-icon">📋</div>
+                  <h3 class="empty-title"><span data-mr="अद्याप बुकिंग नाही">No bookings yet</span></h3>
+                  <p class="empty-sub"><span data-mr="तुमचे पहिले यंत्र बुक करण्यासाठी 'उपकरणे शोधा' वर जा.">Head to "Find Equipment" to book your first machine.</span></p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.cat-filter-chip {
+  background: var(--white); border: 1.5px solid var(--border);
+  border-radius: 50px; padding: 0.4rem 1rem;
+  font-size: 0.85rem; font-weight: 500; color: var(--ink-soft);
+  text-decoration: none; transition: all 0.2s; white-space: nowrap;
+}
+.cat-filter-chip:hover { border-color: var(--forest); color: var(--forest); background: rgba(27,67,50,0.04); }
+.cat-filter-chip.active { background: var(--forest); border-color: var(--forest); color: white; }
+</style>
+
+<script>
+function switchTab(tabId, btnId) {
+  ['tab-find','tab-bookings'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).style.display = 'block';
+  document.getElementById(btnId).classList.add('active');
+}
+// Auto-open bookings tab if hash is present
+if (window.location.hash === '#bookings') {
+  switchTab('tab-bookings', 'btn-bookings');
+}
+</script>
+{% endblock %}

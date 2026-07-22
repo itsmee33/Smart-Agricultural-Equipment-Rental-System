@@ -1,0 +1,185 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="page-banner">
+  <div class="page-banner-deco"></div>
+  <div class="container">
+    <a href="/farmer" style="color:rgba(255,255,255,0.6); font-size:0.88rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.8rem;">
+      <i class="fas fa-arrow-left"></i> <span data-mr="उपकरणांकडे परत">Back to Equipment</span>
+    </a>
+    <h1 class="page-title"><span data-mr="उपकरण बुक करा">Book Equipment</span></h1>
+    <p class="page-subtitle"><span data-mr="विनंती पाठवण्यासाठी तुमच्या भाड्याच्या तारखा निवडा">Choose your rental dates to send a request</span></p>
+  </div>
+</div>
+
+<div class="container" style="padding-top:3rem; padding-bottom:4rem;">
+  <div style="max-width:580px; margin:0 auto;">
+
+    <!-- Equipment info card -->
+    <div class="card-premium mb-4 animate-enter" style="padding:1.5rem;">
+      <div style="display:flex; align-items:flex-start; gap:1.2rem;">
+        <div style="width:60px;height:60px;background:rgba(27,67,50,0.08);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.8rem; flex-shrink:0;">
+          {% if item[3]=='Tractor' %}🚜
+          {% elif item[3]=='Harvester' %}🌾
+          {% elif item[3]=='Rotavator' %}⚙️
+          {% elif item[3]=='Cultivator' %}🔧
+          {% elif item[3]=='Sprayer' %}💧
+          {% else %}🛠️{% endif %}
+        </div>
+        <div style="flex:1;">
+          <div style="font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--forest); margin-bottom:0.2rem;">{{ item[2] }}</div>
+          <span style="background:rgba(27,67,50,0.08); color:var(--forest); border-radius:50px; font-size:0.78rem; font-weight:600; padding:0.2rem 0.7rem;">{{ item[3] }}</span>
+          {% if item[4] %}
+          <p style="color:var(--ink-muted); font-size:0.88rem; margin-top:0.6rem; margin-bottom:0;">{{ item[4] }}</p>
+          {% endif %}
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <div style="font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--forest);">₹{{ item[5] }}</div>
+          <div style="font-size:0.78rem; color:var(--ink-muted);"><span data-mr="प्रति तास">per hour</span></div>
+        </div>
+      </div>
+
+      <!-- Owner info -->
+      <div style="margin-top:1.2rem; padding-top:1rem; border-top:1px solid var(--border); display:flex; align-items:center; gap:0.8rem;">
+        <div style="width:34px;height:34px;background:var(--forest);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:0.85rem; flex-shrink:0;">
+          <i class="fas fa-user"></i>
+        </div>
+        <div>
+          <div style="font-size:0.82rem; color:var(--ink-muted);"><span data-mr="नोंदवले">Listed by</span></div>
+          <div style="font-weight:600; color:var(--forest); font-size:0.92rem;">{{ item[6] }}</div>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:0.4rem; color:var(--ink-muted); font-size:0.85rem;">
+          <i class="fas fa-phone" style="color:var(--forest-light);"></i>
+          {{ item[7] }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Already booked dates warning -->
+    {% if booked_ranges %}
+    <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:var(--radius-sm); padding:0.9rem 1.2rem; margin-bottom:1.2rem; display:flex; gap:0.8rem; align-items:flex-start;">
+      <i class="fas fa-calendar-times" style="color:#D97706; margin-top:0.1rem; flex-shrink:0;"></i>
+      <div>
+        <div style="font-weight:600; color:#92400E; font-size:0.88rem; margin-bottom:0.3rem;"><span data-mr="या तारखांवर आधीच बुक केले आहे:">Already booked on these dates:</span></div>
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+          {% for r in booked_ranges %}
+          <span style="background:#FEF3C7; color:#92400E; border:1px solid #FCD34D; border-radius:50px; font-size:0.78rem; padding:0.15rem 0.65rem; font-weight:500;">
+            {{ r[0] }} → {{ r[1] }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Booking form -->
+    <div class="form-page-card animate-enter" style="margin:0;">
+      <h2 class="form-page-title" style="font-size:1.3rem;"><span data-mr="तुमच्या तारखा निवडा">Select Your Dates</span></h2>
+      <p class="form-page-sub" style="margin-bottom:1.5rem; padding-bottom:1.2rem;"><span data-mr="किंमत ८ कामाचे तास/दिवस × दर/तास × दिवसांची संख्या असे मोजली जाते.">Pricing is calculated at 8 working hours/day × rate/hr × number of days.</span></p>
+
+      <form action="/book/{{ item[0] }}" method="POST">
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label"><span data-mr="सुरुवात तारीख">Start Date</span></label>
+              <div class="field-wrap">
+                <i class="fas fa-calendar-alt field-icon"></i>
+                <input type="date" name="start_date" class="form-control" required id="start_date">
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="field-group" style="margin-bottom:0;">
+              <label class="field-label"><span data-mr="शेवट तारीख">End Date</span></label>
+              <div class="field-wrap">
+                <i class="fas fa-calendar-check field-icon"></i>
+                <input type="date" name="end_date" class="form-control" required id="end_date">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conflict warning (JS-powered) -->
+        <div id="conflict-warning" style="display:none; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:10px; padding:0.8rem 1rem; margin-bottom:1rem; font-size:0.88rem; color:#991B1B; display:none; align-items:center; gap:0.5rem;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span id="conflict-msg">These dates may conflict with an existing booking.</span>
+        </div>
+
+        <!-- Live price estimate -->
+        <div id="price-estimate" style="display:none; background:linear-gradient(135deg,#F0FDF4,#DCFCE7); border:1px solid #A7F3D0; border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.2rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:0.78rem; color:var(--forest-mid); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.3rem;" data-mr="अंदाजे एकूण">Estimated Total</div>
+              <div style="font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--forest);" id="price-val">₹0</div>
+            </div>
+            <div style="text-align:right; font-size:0.82rem; color:var(--forest-mid);">
+              <div id="price-breakdown"></div>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-premium" id="submit-btn">
+          <i class="fas fa-check-circle"></i> <span data-mr="बुकिंग विनंती पाठवा">Send Booking Request</span>
+        </button>
+      </form>
+
+      <p style="text-align:center; color:var(--ink-muted); font-size:0.82rem; margin-top:1rem;">
+        <i class="fas fa-info-circle me-1"></i>
+        <span data-mr="विनंती मंजुरीसाठी मालकाला पाठवली जाईल. आत्ता कोणतेही पेमेंट नाही.">Request will be sent to the owner for approval. No payment yet.</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+const ratePerHour = {{ item[5] }};
+const bookedRanges = [{% for r in booked_ranges %}["{{ r[0] }}","{{ r[1] }}"]{% if not loop.last %},{% endif %}{% endfor %}];
+const startEl = document.getElementById('start_date');
+const endEl   = document.getElementById('end_date');
+const today   = new Date().toISOString().split('T')[0];
+startEl.min   = today; endEl.min = today;
+
+function checkConflict(s, e) {
+  for (const [bs, be] of bookedRanges) {
+    if (!(e < bs || s > be)) return true;
+  }
+  return false;
+}
+
+function updateUI() {
+  const s = startEl.value, e = endEl.value;
+  const estimate = document.getElementById('price-estimate');
+  const warn     = document.getElementById('conflict-warning');
+  const btn      = document.getElementById('submit-btn');
+
+  if (s && e && s <= e) {
+    const days    = (new Date(e) - new Date(s)) / 86400000 + 1;
+    const total   = days * 8 * ratePerHour;
+    const isMr    = localStorage.getItem('farmrental_lang') === 'mr';
+    document.getElementById('price-val').textContent = '₹' + total.toLocaleString('en-IN');
+    document.getElementById('price-breakdown').innerHTML = isMr
+      ? `${days} दिवस × ८ तास × ₹${ratePerHour}/तास`
+      : `${days} day${days>1?'s':''} × 8 hrs × ₹${ratePerHour}/hr`;
+    estimate.style.display = 'block';
+
+    if (checkConflict(s, e)) {
+      warn.style.display = 'flex';
+      const isMr = localStorage.getItem('farmrental_lang') === 'mr';
+      document.getElementById('conflict-msg').textContent = isMr
+        ? 'सावधान: या तारखा आधीच बुक केलेल्या तारखांशी जुळतात!'
+        : 'Warning: these dates overlap with a confirmed booking!';
+      btn.style.opacity = '0.7';
+    } else {
+      warn.style.display = 'none';
+      btn.style.opacity = '1';
+    }
+  } else {
+    estimate.style.display = 'none';
+    warn.style.display = 'none';
+  }
+}
+
+startEl.addEventListener('change', () => { endEl.min = startEl.value; updateUI(); });
+endEl.addEventListener('change', updateUI);
+</script>
+{% endblock %}
